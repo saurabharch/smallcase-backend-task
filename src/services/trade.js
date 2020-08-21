@@ -31,7 +31,9 @@ class TradeService {
 
   async updateTrade(trade_id, updatedTrade) {
     try {
-      return await Security.findByIdAndUpdate(trade_id, updatedTrade);
+      return await Security.findByIdAndUpdate(trade_id, updatedTrade, {
+        new: true,
+      });
     } catch (error) {
       throw new GeneralError(error);
     }
@@ -56,11 +58,14 @@ class TradeService {
           error: "Trade is not present is portfolio",
         };
       const { shares, buyPrice } = currentTradeValues;
+      /* Update average value and shares
+        updatedSecurity = (currentPrice * currentShares + boughtTotalShareAmount * noOfShares) / (noOfShares + currentShares) 
+      */
       const updatedBuyPrice =
         (buyPrice * shares + amount * boughtShares) / (boughtShares + shares);
       const updatedShares = boughtShares + shares;
       const updatedSecurity = {
-        buyPrice: updatedBuyPrice,
+        buyPrice: updatedBuyPrice.toFixed(2),
         shares: updatedShares,
       };
       const updatedTrade = await this.updateTrade(trade_id, updatedSecurity);
@@ -82,7 +87,7 @@ class TradeService {
       };
     const { shares } = currentTradeValues;
     if (shares >= sellShares) {
-      //Calculate
+      //Calculate and update document
       const remainingShares = shares - sellShares;
       const updatedShares = { shares: remainingShares };
       const updatedTrade = await this.updateTrade(trade_id, updatedShares);
