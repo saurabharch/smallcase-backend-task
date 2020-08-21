@@ -11,7 +11,7 @@ class PortfolioService {
           $group: {
             _id: null,
             totalShares: { $sum: "$shares" },
-            totalBoughtShares: { $sum: "$buyPrice" },
+            totalBoughtSharesAmount: { $sum: "$buyPrice" },
           },
         },
       ]);

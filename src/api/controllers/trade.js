@@ -60,7 +60,7 @@ const buyTrade = async (req, res, next) => {
     return res.status(400).json(response(400, error, null));
   });
   if (!success) return res.status(409).json(response(409, error, null));
-  return res.status(200).json(response(200, "Shares has been brought", data));
+  return res.status(200).json(response(200, "Shares has been bought", data));
 };
 
 const sellTrade = async (req, res, next) => {
