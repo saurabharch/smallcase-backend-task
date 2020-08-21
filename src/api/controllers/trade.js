@@ -13,6 +13,12 @@ const addTrade = async (req, res, next) => {
       .status(400)
       .json(response(400, "Missing attributes required", null));
 
+  if (buyPrice < 0 || shares < 0) {
+    return res
+      .status(400)
+      .json(response(400, "Values can't be negative", null));
+  }
+  
   const securityModel = { ticker: ticker.toUpperCase(), buyPrice, shares };
   const savedTrade = await TradeService.addTrade(securityModel).catch(
     (error) => {
