@@ -8,10 +8,13 @@ const getTrades = async (req, res, next) => {
 };
 
 const getHoldings = async (req, res, next) => {
-  const [
-    { totalShares, totalBoughtShares },
-  ] = await PortfolioService.getHoldings();
+  const holdings = await PortfolioService.getHoldings();
+  if (holdings.length === 0)
+    return res
+      .status(204)
+      .json(response(204, "0 securities in portfolio", null));
 
+  const { totalShares, totalBoughtShares } = holdings;
   return res.json(
     response(200, "Holdings of all trades in portfolio", {
       totalShares,
