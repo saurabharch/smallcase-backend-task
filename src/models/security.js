@@ -22,8 +22,7 @@ const SecuritySchema = new mongoose.Schema({
   },
 });
 
-//SecuritySchema.indexes({ $text: ticker });
-
+SecuritySchema.indexes({ ticker: 1 }, { unique: true });
 SecuritySchema.plugin(timestamp);
 
 module.exports = mongoose.model("Security", SecuritySchema);

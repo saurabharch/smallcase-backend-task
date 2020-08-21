@@ -1,13 +1,24 @@
 const Container = require("typedi").Container;
 const Security = require("../models/security");
-const {  GeneralError } = require("../utils/error");
+const { GeneralError } = require("../utils/error");
 
 class TradeService {
+  //Trade DAO methods
+  async addTrade(model) {
+    try {
+      const security = new Security(model);
+      return await security.save();
+    } catch (error) {
+      throw new GeneralError(error);
+    }
+  }
 
   async getTrades() {
-    return await Security.find().catch((error) => {
+    try {
+      return await Security.find();
+    } catch (error) {
       throw new GeneralError(error);
-    });
+    }
   }
 
   async getTrade(trade_id) {
@@ -19,35 +30,48 @@ class TradeService {
   }
 
   async updateTrade(trade_id, updatedTrade) {
-    return await Security.findByIdAndUpdate(trade_id, updatedTrade).catch(
-      (error) => {
-        throw new GeneralError(error);
-      }
-    );
+    try {
+      return await Security.findByIdAndUpdate(trade_id, updatedTrade);
+    } catch (error) {
+      throw new GeneralError(error);
+    }
   }
 
+  async removeTrade(trade_id) {
+    try {
+      return await Security.findByIdAndDelete(trade_id);
+    } catch (error) {
+      throw new GeneralError(error);
+    }
+  }
+
+  //Trade Services
   async buyTrade({ trade_id, boughtShares, amount }) {
-    const currentTradeValues = await this.getTrade(trade_id);
-    if (!currentTradeValues)
-      return {
-        success: false,
-        data: currentTradeValues,
-        error: "Trade is not present is portfolio",
+    try {
+      const currentTradeValues = await this.getTrade(trade_id);
+      if (!currentTradeValues)
+        return {
+          success: false,
+          data: currentTradeValues,
+          error: "Trade is not present is portfolio",
+        };
+      const { shares, buyPrice } = currentTradeValues;
+      const updatedBuyPrice =
+        (buyPrice * shares + amount * boughtShares) / (boughtShares + shares);
+      const updatedShares = boughtShares + shares;
+      const updatedSecurity = {
+        buyPrice: updatedBuyPrice,
+        shares: updatedShares,
       };
-    const { shares, buyPrice } = currentTradeValues;
-    const updatedBuyPrice =
-      (buyPrice * shares + amount * boughtShares) / (boughtShares + shares);
-    const updatedShares = boughtShares + shares;
-    const updatedSecurity = {
-      buyPrice: updatedBuyPrice,
-      shares: updatedShares,
-    };
-    const updatedTrade = await this.updateTrade(trade_id, updatedSecurity);
-    return { success: true, data: updatedTrade, error: null };
+      const updatedTrade = await this.updateTrade(trade_id, updatedSecurity);
+      return { success: true, data: updatedTrade, error: null };
+    } catch (error) {
+      throw new GeneralError(error);
+    }
   }
 
-  async sellTrade(trade_id, soldShares) {
-    if (soldShares <= 0)
+  async sellTrade(trade_id, sellShares) {
+    if (sellShares <= 0)
       return { success: false, data: null, error: "Enter valid shares number" };
     const currentTradeValues = await this.getTrade(trade_id);
     if (!currentTradeValues)
@@ -57,12 +81,11 @@ class TradeService {
         error: "Trade is not present is portfolio",
       };
     const { shares } = currentTradeValues;
-    if (shares >= soldShares) {
+    if (shares >= sellShares) {
       //Calculate
-      const remainingShares = shares - soldShares;
+      const remainingShares = shares - sellShares;
       const updatedShares = { shares: remainingShares };
       const updatedTrade = await this.updateTrade(trade_id, updatedShares);
-      console.log(updatedTrade);
       return { success: true, data: updatedTrade, error: null };
     }
     return {

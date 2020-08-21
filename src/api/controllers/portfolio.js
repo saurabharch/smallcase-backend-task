@@ -1,4 +1,4 @@
-const PortfolioServices = require("../../services/portfolio");
+const PortfolioService = require("../../services/portfolio");
 const TradeService = require("../../services/trade");
 const { response } = require("../../utils/utils");
 
@@ -8,16 +8,29 @@ const getTrades = async (req, res, next) => {
 };
 
 const getHoldings = async (req, res, next) => {
-  const totalAggregate = await PortfolioServices.getHoldings();
+  const [
+    { totalShares, totalBoughtShares },
+  ] = await PortfolioService.getHoldings();
+
   return res.json(
-    response(200, "Holdings of all trades in portfolio", totalAggregate)
+    response(200, "Holdings of all trades in portfolio", {
+      totalShares,
+      totalBoughtShares,
+    })
   );
 };
 
-const getCumulativeReturn = async (req, res, next) => {};
+const getCumulativeReturns = async (req, res, next) => {
+  const cumulativeReturns = await PortfolioService.getCumulativeReturns();
+  return res
+    .status(200)
+    .json(
+      response(200, "Cumulative returns for portfolio", { cumulativeReturns })
+    );
+};
 
 module.exports = {
   getTrades,
   getHoldings,
-  getCumulativeReturn,
+  getCumulativeReturns,
 };

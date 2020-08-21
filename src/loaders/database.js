@@ -7,8 +7,9 @@ mongoose
     dbName: config.DB.NAME,
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
   })
   .then(() => console.log("Connected to database"))
   .catch((error) => {
-    console.log("Not able to connect database");
+    throw new GeneralError(error);
   });
